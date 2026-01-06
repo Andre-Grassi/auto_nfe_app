@@ -1,4 +1,5 @@
 import flet as ft
+from typing import List
 
 
 class FileInput(ft.Row):
@@ -14,9 +15,9 @@ class FileInput(ft.Row):
         self.spacing = 10
 
         # 1. Configura o FilePicker (o diálogo do sistema)
-        self.file_picker = ft.FilePicker(on_upload=self._on_file_picked)
+        self.file_picker = ft.FilePicker()
         # OBRIGATÓRIO: O FilePicker deve estar no overlay da página para funcionar
-        self._page.overlay.append(self.file_picker)
+        # self._page.overlay.append(self.file_picker)
 
         # 2. O Campo de Texto (Visível)
         self.text_field = ft.TextField(
@@ -28,7 +29,7 @@ class FileInput(ft.Row):
         # 3. O Botão que abre a janela
         self.pick_button = ft.IconButton(
             icon=icon,
-            tooltip="Selecionar Arquivo",  # UI em Português
+            tooltip="Selecionar Arquivo",
             on_click=self._open_picker_dialog,
         )
 
@@ -39,15 +40,19 @@ class FileInput(ft.Row):
         """
         Abre a janela nativa de seleção de arquivos.
         """
-        await self.file_picker.pick_files(allow_multiple=False)
+        files = await self.file_picker.pick_files(allow_multiple=False)
+        self._on_file_picked(files)
 
-    def _on_file_picked(self, e: ft.FilePickerUploadEvent):
+    def _on_file_picked(self, files: List[ft.FilePickerFile]):
         """
         Chamado quando o usuário escolhe um arquivo na janela.
         """
-        if e.data and len(e.data) > 0:
+        if files and len(files) > 0:
             # Pega o caminho do primeiro arquivo
-            file_path = e.data[0].path
+            file_path = files[0].path
+
+            if not file_path:
+                return
 
             # Preenche o input visualmente
             self.text_field.value = file_path
