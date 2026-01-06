@@ -39,3 +39,12 @@ class PlanilhaForm(ft.Column):
         )
 
         self.controls.extend([row1, row2])
+
+    def get_values(self):
+        return {
+            "cnpj": self.cnpj_input.value,
+            "cert_path": self.cert_input.value,
+            "password": self.password_input.value,
+            "sheet_path": self.sheet_input.value,
+            "folder_path": self.folder_input.value,
+        }
