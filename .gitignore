@@ -1,0 +1,8 @@
+*.pfx
+schemas/*
+*xml
+*.csv
+*.xls
+*.xlsx
+*.pyc 
+.venv/*
