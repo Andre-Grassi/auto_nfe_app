@@ -1,7 +1,7 @@
 import flet as ft
 
 # Certifique-se de que o import aponta para onde você salvou o componente FileInput
-from components.file_input import FileInput
+from components.file_input import FileInput, FileType
 
 
 class PlanilhaForm(ft.Column):
@@ -44,7 +44,10 @@ class PlanilhaForm(ft.Column):
 
         # 3. Pasta de Destino
         self.folder_input = FileInput(
-            self._page, label="Pasta para direcionar XMLs", icon=ft.Icons.FOLDER_OPEN
+            self._page,
+            label="Pasta para direcionar XMLs",
+            icon=ft.Icons.FOLDER_OPEN,
+            file_type=FileType.FOLDER,
         )
         self.folder_input.width = 300
 

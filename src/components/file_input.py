@@ -1,15 +1,26 @@
 import flet as ft
 from typing import List
+from enum import Enum
+
+
+class FileType(Enum):
+    FILE = "file"
+    FOLDER = "folder"
 
 
 class FileInput(ft.Row):
     def __init__(
-        self, page: ft.Page, label: str, icon: ft.Icons = ft.Icons.FOLDER_OPEN
+        self,
+        page: ft.Page,
+        label: str,
+        file_type: FileType = FileType.FILE,
+        icon: ft.Icons = ft.Icons.FOLDER_OPEN,
     ):
         """
         Componente que junta um Input de Texto com um Seletor de Arquivos nativo.
         """
         super().__init__()
+        self.file_type = file_type
         self._page = page
         self.vertical_alignment = ft.CrossAxisAlignment.CENTER
         self.spacing = 10
@@ -36,8 +47,15 @@ class FileInput(ft.Row):
         Abre a janela nativa de seleção de arquivos.
         """
         file_picker = ft.FilePicker()
-        files = await file_picker.pick_files(allow_multiple=False)
-        self._on_file_picked(files)
+
+        if self.file_type == FileType.FILE:
+            files = await file_picker.pick_files(allow_multiple=False)
+            self._on_file_picked(files)
+        elif self.file_type == FileType.FOLDER:
+            folder_path = await file_picker.get_directory_path()
+            self._on_folder_picked(folder_path)
+        else:
+            raise ValueError("Tipo de arquivo desconhecido para FileInput")
 
     def _on_file_picked(self, files: List[ft.FilePickerFile]):
         """
@@ -52,6 +70,15 @@ class FileInput(ft.Row):
 
             # Preenche o input visualmente
             self.text_field.value = file_path
+            self.text_field.update()
+
+    def _on_folder_picked(self, folder_path: str | None):
+        """
+        Chamado quando o usuário escolhe uma pasta na janela.
+        """
+        if folder_path:
+            # Preenche o input visualmente
+            self.text_field.value = folder_path
             self.text_field.update()
 
     @property
