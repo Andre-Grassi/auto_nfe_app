@@ -9,15 +9,14 @@ from components.download_btn import DownloadBtn
 
 
 class HomeView(ft.View):
-    def __init__(self):
+    def __init__(self, page: ft.Page):
         super().__init__(route="/")
 
         # Título
         self.title = ft.Text("Auto Nfe", size=40, weight=ft.FontWeight.BOLD)
 
         # --- Elementos do Formulário de Planilha ---
-        self.planilha_form = PlanilhaForm()
-
+        self.planilha_form = PlanilhaForm(page)
         # --- Elementos da Área de Ação (Botão e Progresso) ---
         self.download_btn = DownloadBtn(self.handle_download)
 

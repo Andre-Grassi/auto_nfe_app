@@ -1,6 +1,6 @@
 [project]
 name = "auto-nfe-app"
-version = "0.2.0"
+version = "0.3.0"
 
 dependencies = [
     "auto-nfe @ git+https://github.com/Andre-Grassi/nfe_automatico.git@lib",

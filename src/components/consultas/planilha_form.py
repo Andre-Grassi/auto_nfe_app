@@ -31,12 +31,14 @@ class PlanilhaForm(ft.Column):
         # --- Campos de Entrada com Seletor de Arquivo (FileInput) ---
 
         # 1. Certificado
-        self.cert_input = FileInput(page, label="Certificado A1", icon=ft.Icons.BADGE)
+        self.cert_input = FileInput(
+            self._page, label="Certificado A1", icon=ft.Icons.BADGE
+        )
         self.cert_input.width = 300  # Força a largura para alinhar com o grid
 
         # 2. Planilha
         self.sheet_input = FileInput(
-            page, label="Planilha de Relação", icon=ft.Icons.TABLE_CHART
+            self._page, label="Planilha de Relação", icon=ft.Icons.TABLE_CHART
         )
         self.sheet_input.width = 300
 

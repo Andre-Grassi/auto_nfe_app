@@ -23,7 +23,7 @@ async def main(page: ft.Page):
         print("Rota alterada para:", page.route)
 
         if page.route == "/":
-            home_view = HomeView()
+            home_view = HomeView(page)
             print("Entrou na HomeView")
             page.views.append(home_view)
 
