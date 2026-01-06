@@ -14,11 +14,6 @@ class FileInput(ft.Row):
         self.vertical_alignment = ft.CrossAxisAlignment.CENTER
         self.spacing = 10
 
-        # 1. Configura o FilePicker (o diálogo do sistema)
-        self.file_picker = ft.FilePicker()
-        # OBRIGATÓRIO: O FilePicker deve estar no overlay da página para funcionar
-        # self._page.overlay.append(self.file_picker)
-
         # 2. O Campo de Texto (Visível)
         self.text_field = ft.TextField(
             label=label,
@@ -40,7 +35,8 @@ class FileInput(ft.Row):
         """
         Abre a janela nativa de seleção de arquivos.
         """
-        files = await self.file_picker.pick_files(allow_multiple=False)
+        file_picker = ft.FilePicker()
+        files = await file_picker.pick_files(allow_multiple=False)
         self._on_file_picked(files)
 
     def _on_file_picked(self, files: List[ft.FilePickerFile]):
