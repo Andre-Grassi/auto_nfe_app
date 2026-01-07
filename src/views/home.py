@@ -1,5 +1,6 @@
 import flet as ft
 import threading
+import asyncio
 import time
 
 from auto_nfe import ClientNfe
@@ -44,23 +45,36 @@ class HomeView(ft.View):
         self.vertical_alignment = ft.MainAxisAlignment.CENTER
         self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
 
-    def update_progress_ui(self, current_step, total_steps):
+    async def update_progress_ui(self, current_step, total_steps):
         """
         Callback chamado pelo Backend para atualizar a UI.
         """
         percentage = current_step / total_steps
+        print(f"Progresso: {percentage*100:.2f}%")
 
         # Atualiza os valores visuais
         self.progress_bar.value = percentage
         self.progress_text.value = f"Baixando XMLs: {current_step}/{total_steps}"
 
         # Atualiza a view
+        self.progress_bar.update()
+        self.progress_text.update()
+        self.page.update()
         self.update()
 
-    def _run_background_task(self, form_data):
+    async def _run_background_task(self):
         """
         Lógica pesada que roda em uma Thread separada.
         """
+
+        form_data = self.form_data
+
+        def task(current, total):
+            async def run():
+                await self.update_progress_ui(current, total)
+
+            self.page.run_task(run)
+
         try:
             client = ClientNfe(
                 cnpj=form_data["cnpj"],
@@ -68,10 +82,10 @@ class HomeView(ft.View):
                 cert_password=form_data["password"],
             )
 
-            client.consulta_planilha(
+            await client.consulta_planilha(
                 form_data["sheet_path"],
                 form_data["folder_path"],
-                self.update_progress_ui,
+                task,
             )
 
             # Sucesso
@@ -106,6 +120,8 @@ class HomeView(ft.View):
             self.page.update()
             return
 
+        self.form_data = form_data
+
         # 2. Configura UI para estado de "Carregando"
         self.download_btn.disabled = True
         self.progress_text.visible = True
@@ -116,7 +132,6 @@ class HomeView(ft.View):
 
         # 3. Inicia a Thread
         # Passamos form_data como argumento para a thread não acessar a UI diretamente
-        t = threading.Thread(
-            target=self._run_background_task, args=(form_data,), daemon=True
-        )
-        t.start()
+        # lock = threading.Lock()
+        # self.lock = lock
+        self.page.run_task(self._run_background_task)
