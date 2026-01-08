@@ -2,7 +2,22 @@
 name = "auto-nfe-app"
 version = "0.3.2"
 
-dependencies = [
-    "auto-nfe @ git+https://github.com/Andre-Grassi/nfe_automatico.git@lib",
-    "flet>=0.80.1",
+dependencies = ["auto-nfe @ file:///F:/Dev/nfe_automatico", "flet>=0.80.1"]
+
+[tool.flet]
+compile.app = true # --compile-app
+compile.packages = true # --compile-packages
+compile.cleanup = true # --cleanup-on-compile
+include = ["F:/Dev/nfe_automatico/src/auto_nfe/schemas/*.xml"]
+additional_files = [
+    { source = "src/auto_nfe/schemas/*.xml", target = "auto_nfe/schemas" },
 ]
+
+copyright = "Copyright (C) 2026 by Andre Grassi de Jesus"
+
+[tool.flet.app]
+path = "src"
+
+[tool.setuptools.package-data]
+"auto_nfe" = ["schemas/*.xml"]
+"auto_nfe.schemas" = ["*.xml"]
