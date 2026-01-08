@@ -34,6 +34,10 @@ class HomeView(ft.View):
             spacing=10,
         )
 
+        self.dlg_nfe_status = ft.AlertDialog(
+            title=ft.Text("Status do Download do NFe"), content=ft.Text("Alerta: ")
+        )
+
         self.controls = [
             self.title,
             self.planilha_form,
@@ -69,9 +73,20 @@ class HomeView(ft.View):
 
         form_data = self.form_data
 
-        def task(current, total):
+        def task_progress(current, total):
             async def run():
                 await self.update_progress_ui(current, total)
+
+            self.page.run_task(run)
+
+        def task_notification(message: str):
+            async def run():
+                self.dlg_nfe_status.content = ft.Text(message)
+                self.page.show_dialog(self.dlg_nfe_status)
+                self.page.update()
+                await asyncio.sleep(2)
+                self.page.pop_dialog()
+                self.page.update()
 
             self.page.run_task(run)
 
@@ -96,7 +111,8 @@ class HomeView(ft.View):
             await client.consulta_planilha(
                 form_data["sheet_path"],
                 form_data["folder_path"],
-                task,
+                callback_progress=task_progress,
+                callback_status=task_notification,
             )
 
             # Sucesso
