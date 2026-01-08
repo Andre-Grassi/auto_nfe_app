@@ -6,3 +6,4 @@ schemas/*
 *.xlsx
 *.pyc 
 .venv/*
+build/*
