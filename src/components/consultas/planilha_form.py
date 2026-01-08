@@ -16,8 +16,8 @@ class PlanilhaForm(ft.Column):
         self.alignment = ft.MainAxisAlignment.CENTER
 
         # --- Campos de Entrada Simples ---
-        self.cnpj_input = ft.TextField(
-            label="CNPJ", hint_text="Digite o CNPJ", width=300
+        self.cnpj_cpf_input = ft.TextField(
+            label="CNPJ/CPF", hint_text="Digite o CNPJ ou CPF", width=300
         )
 
         self.password_input = ft.TextField(
@@ -54,7 +54,7 @@ class PlanilhaForm(ft.Column):
         # --- Layout (Grid) ---
         # Linha 1: CNPJ | Certificado | Senha
         row1 = ft.Row(
-            [self.cnpj_input, self.cert_input, self.password_input],
+            [self.cnpj_cpf_input, self.cert_input, self.password_input],
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
         )
@@ -74,7 +74,7 @@ class PlanilhaForm(ft.Column):
         Nota: O FileInput possui uma propriedade .value que retorna o texto interno.
         """
         return {
-            "cnpj": self.cnpj_input.value,
+            "cnpj_cpf": self.cnpj_cpf_input.value,
             "cert_path": self.cert_input.value,
             "password": self.password_input.value,
             "sheet_path": self.sheet_input.value,

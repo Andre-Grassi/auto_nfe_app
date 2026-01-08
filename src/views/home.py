@@ -76,11 +76,22 @@ class HomeView(ft.View):
             self.page.run_task(run)
 
         try:
-            client = ClientNfe(
-                cnpj=form_data["cnpj"],
-                cert_pfx_path=form_data["cert_path"],
-                cert_password=form_data["password"],
-            )
+            if len(form_data["cnpj_cpf"]) == 14:
+                client = ClientNfe(
+                    cnpj=form_data["cnpj_cpf"],
+                    cert_pfx_path=form_data["cert_path"],
+                    cert_password=form_data["password"],
+                )
+            elif len(form_data["cnpj_cpf"]) == 11:
+                client = ClientNfe(
+                    cpf=form_data["cnpj_cpf"],
+                    cert_pfx_path=form_data["cert_path"],
+                    cert_password=form_data["password"],
+                )
+            else:
+                raise ValueError("CNPJ/CPF inválido. Deve conter 11 ou 14 dígitos.")
+
+            print(form_data["folder_path"])
 
             await client.consulta_planilha(
                 form_data["sheet_path"],
@@ -95,7 +106,7 @@ class HomeView(ft.View):
 
         except Exception as e:
             # Erro
-            self.progress_text.value = f"Error: {str(e)}"
+            self.progress_text.value = f"Erro: {str(e)}"
             self.progress_text.color = ft.Colors.RED
 
         finally:
