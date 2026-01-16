@@ -3,6 +3,7 @@ import asyncio
 
 # --- Views ---
 from views.home import HomeView
+from views.nfe import NfeView
 
 # --- Client Nfe ---
 from auto_nfe import ClientNfe
@@ -26,6 +27,10 @@ async def main(page: ft.Page):
             home_view = HomeView(page)
             print("Entrou na HomeView")
             page.views.append(home_view)
+        elif page.route == "/nfe":
+            nfe_view = NfeView(page)
+            print("Entrou na NfeView")
+            page.views.append(nfe_view)
 
         page.update()
 
