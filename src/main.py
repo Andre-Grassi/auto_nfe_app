@@ -18,6 +18,15 @@ async def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
 
     # --- Roteamento ---
+    async def go_back(e):
+        # Option 1: Pop the view
+        if len(page.views) > 1:
+            page.views.pop()
+            top_view = page.views[-1]
+            if not top_view.route:
+                return
+            await page.push_route(top_view.route)
+
     def route_change():
         page.views.clear()
 
