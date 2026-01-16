@@ -11,7 +11,9 @@ from components.download_btn import DownloadBtn
 
 class NfeView(ft.View):
     def __init__(self, page: ft.Page):
-        super().__init__(route="/nfe")
+        super().__init__(
+            route="/nfe", appbar=ft.AppBar(title=ft.Text("Consultar NF-e"))
+        )
 
         # Título
         self.title = ft.Text("Auto Nfe", size=40, weight=ft.FontWeight.BOLD)
@@ -162,3 +164,16 @@ class NfeView(ft.View):
         # lock = threading.Lock()
         # self.lock = lock
         self.page.run_task(self._run_background_task)
+
+    async def go_back(self, e, page: ft.Page):
+        # se houver mais de uma view, remove a atual e navega para a anterior
+        if len(page.views) > 1:
+            page.views.pop()
+            top_view = page.views[-1]
+            if top_view.route:
+                await page.push_route(top_view.route)
+            else:
+                await page.push_route("/")
+        else:
+            # fallback: vai para a rota raiz
+            await page.push_route("/")
