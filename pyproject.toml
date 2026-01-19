@@ -4,6 +4,10 @@ version = "0.7.0"
 
 dependencies = ["auto-nfe @ file:///F:/Dev/nfe_automatico", "flet>=0.80.1"]
 
+[build-system]
+requires = ["setuptools>=80.0"]
+
+
 [tool.flet]
 compile.app = true # --compile-app
 compile.packages = true # --compile-packages
