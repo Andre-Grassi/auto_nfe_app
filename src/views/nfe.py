@@ -12,7 +12,14 @@ from components.download_btn import DownloadBtn
 class NfeView(ft.View):
     def __init__(self, page: ft.Page):
         super().__init__(
-            route="/nfe", appbar=ft.AppBar(title=ft.Text("Consultar NF-e"))
+            route="/nfe",
+            appbar=ft.AppBar(
+                title=ft.Text("Consultar NF-e"),
+                leading=ft.IconButton(
+                    icon=ft.Icons.ARROW_BACK,
+                    on_click=lambda e: asyncio.create_task(self.go_back(e, page)),
+                ),
+            ),
         )
 
         # Título
