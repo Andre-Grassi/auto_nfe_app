@@ -1,8 +1,19 @@
 import os
 import flet as ft
 
+try:
+    import tomllib
+except ImportError:
+    # Fall back to tomli for Python versions < 3.11
+    import tomli as tomllib
+
 # Certifique-se de que o import aponta para onde você salvou o componente FileInput
 from components.file_input import FileInput, FileType
+from components.load_profile_btn import LoadProfileBtn
+
+from utils.utils import get_file_path
+
+from constants import PROFILE_PATH
 
 
 class NfseWebForm(ft.Column):
@@ -16,6 +27,8 @@ class NfseWebForm(ft.Column):
         self._page = page
         self.spacing = 30
         self.alignment = ft.MainAxisAlignment.CENTER
+
+        self.load_profile_btn = LoadProfileBtn(self._load_profile)
 
         # --- Campos de Entrada Simples ---
         self.usuario_input = ft.TextField(
@@ -61,15 +74,21 @@ class NfseWebForm(ft.Column):
         self.download_folder_input.width = 300
 
         # --- Layout (Grid) ---
-        # Linha 1: Usuário | Senha | Arquivo CNPJs
         row1 = ft.Row(
+            [self.load_profile_btn],
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=20,
+        )
+
+        # Linha 2: Usuário | Senha | Arquivo CNPJs
+        row2 = ft.Row(
             [self.usuario_input, self.senha_input, self.cnpjs_file_input],
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
         )
 
-        # Linha 2: Data Inicial | Data Final | Pasta Download
-        row2 = ft.Row(
+        # Linha 3: Data Inicial | Data Final | Pasta Download
+        row3 = ft.Row(
             [
                 self.data_inicial_input,
                 self.data_final_input,
@@ -79,7 +98,7 @@ class NfseWebForm(ft.Column):
             spacing=20,
         )
 
-        self.controls.extend([row1, row2])
+        self.controls.extend([row1, row2, row3])
 
     def get_values(self):
         """
@@ -88,7 +107,7 @@ class NfseWebForm(ft.Column):
         """
 
         # Carregar lista de cnpjs
-        cnpjs_txt = os.path.join(os.path.dirname(__file__), self.cnpjs_file_input.value)
+        cnpjs_txt = get_file_path(self.cnpjs_file_input.value)
         with open(cnpjs_txt, "r") as f:
             cnpjs = [line.strip() for line in f if line.strip()]
 
@@ -100,3 +119,33 @@ class NfseWebForm(ft.Column):
             "data_final": self.data_final_input.value,
             "download_path": self.download_folder_input.value,
         }
+
+    def _load_profile(self, e):
+        """Carrega o perfil de credenciais do arquivo profile.toml"""
+        try:
+            # Lê o arquivo TOML
+            with open(PROFILE_PATH, "rb") as f:
+                profile_data = tomllib.load(f)
+
+            # Obtém os dados da seção [nfse]
+            nfse_data = profile_data.get("nfse", {})
+
+            # Preenche os campos do formulário
+            self.usuario_input.value = nfse_data.get("usuario", "")
+            self.senha_input.value = nfse_data.get("senha", "")
+            self.cnpjs_file_input.value = nfse_data.get("caminho_cnpjs", "")
+            self.download_folder_input.value = nfse_data.get("pasta_relatorio", "")
+
+            # Atualiza a interface
+            self.usuario_input.update()
+            self.senha_input.update()
+            self.cnpjs_file_input.update()
+            self.download_folder_input.update()
+            self.update()
+
+            print("Perfil carregado com sucesso!")
+
+        except FileNotFoundError:
+            print(f"Arquivo profile.toml não encontrado em: {PROFILE_PATH}")
+        except Exception as ex:
+            print(f"Erro ao carregar perfil: {ex}")
