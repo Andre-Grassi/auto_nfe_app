@@ -1,3 +1,4 @@
+import os
 import flet as ft
 
 # Certifique-se de que o import aponta para onde você salvou o componente FileInput
@@ -5,6 +6,7 @@ from components.file_input import FileInput, FileType
 
 
 class NfseWebForm(ft.Column):
+
     def __init__(self, page: ft.Page):
         """
         Formulário principal.
@@ -84,10 +86,16 @@ class NfseWebForm(ft.Column):
         Retorna os valores dos campos.
         Nota: O FileInput possui uma propriedade .value que retorna o texto interno.
         """
+
+        # Carregar lista de cnpjs
+        cnpjs_txt = os.path.join(os.path.dirname(__file__), self.cnpjs_file_input.value)
+        with open(cnpjs_txt, "r") as f:
+            cnpjs = [line.strip() for line in f if line.strip()]
+
         return {
             "usuario": self.usuario_input.value,
             "senha": self.senha_input.value,
-            "cnpjs_file": self.cnpjs_file_input.value,
+            "cnpjs": cnpjs,
             "data_inicial": self.data_inicial_input.value,
             "data_final": self.data_final_input.value,
             "download_path": self.download_folder_input.value,
