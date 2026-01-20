@@ -85,3 +85,9 @@ class FileInput(ft.Row):
     def value(self):
         """Atalho para pegar o valor do texto de fora"""
         return self.text_field.value
+
+    @value.setter
+    def value(self, new_value: str):
+        """Atalho para settar o valor do texto de fora"""
+        self.text_field.value = new_value
+        self.text_field.update()
