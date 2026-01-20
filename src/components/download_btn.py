@@ -10,4 +10,5 @@ class DownloadBtn(ft.Button):
                 shape=ft.RoundedRectangleBorder(radius=20),
                 padding=ft.padding.symmetric(horizontal=30, vertical=15),
             ),
+            icon=ft.Icons.DOWNLOAD,
         )
