@@ -1,4 +1,5 @@
 import os
+import datetime
 import flet as ft
 
 try:
@@ -50,18 +51,64 @@ class NfseWebForm(ft.Column):
         self.cnpjs_file_input.width = 300
 
         # Datas
+        # Funçāo auxiliar para atualizar o campo de texto ao selecionar data
+        def on_date_change(e, text_field):
+            if e.control.value:
+                text_field.value = e.control.value.strftime("%d/%m/%Y")
+                text_field.update()
+
+        # 1. DatePicker Data Inicial
+        # Definindo datas limites entre 1980 e 2100 para evitar erro de astimezone no Windows
+        self.date_picker_inicial = ft.DatePicker(
+            on_change=lambda e: on_date_change(e, self.data_inicial_input),
+            first_date=datetime.datetime(1980, 1, 1),
+            last_date=datetime.datetime(2100, 12, 31),
+        )
+
+        # 2. DatePicker Data Final
+        self.date_picker_final = ft.DatePicker(
+            on_change=lambda e: on_date_change(e, self.data_final_input),
+            first_date=datetime.datetime(1980, 1, 1),
+            last_date=datetime.datetime(2100, 12, 31),
+        )
+
+        # 3. Campos de Texto + Botões
         self.data_inicial_input = ft.TextField(
             label="Data Inicial",
             hint_text="dd/mm/aaaa",
+            expand=True,
+        )
+        btn_data_inicial = ft.IconButton(
+            icon=ft.Icons.CALENDAR_MONTH,
+            on_click=lambda _: self._page.show_dialog(self.date_picker_inicial),
+            tooltip="Selecionar Data Inicial",
+        )
+
+        # Container Row para Data Inicial (simulando o FileInput)
+        self.container_data_inicial = ft.Row(
+            [self.data_inicial_input, btn_data_inicial],
             width=300,
-            suffix_icon=ft.Icons.CALENDAR_TODAY,
+            spacing=10,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
         )
 
         self.data_final_input = ft.TextField(
             label="Data Final",
             hint_text="dd/mm/aaaa",
+            expand=True,
+        )
+        btn_data_final = ft.IconButton(
+            icon=ft.Icons.CALENDAR_MONTH,
+            on_click=lambda _: self._page.show_dialog(self.date_picker_final),
+            tooltip="Selecionar Data Final",
+        )
+
+        # Container Row para Data Final
+        self.container_data_final = ft.Row(
+            [self.data_final_input, btn_data_final],
             width=300,
-            suffix_icon=ft.Icons.CALENDAR_TODAY,
+            spacing=10,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
         )
 
         # Download path - seletor de pasta
@@ -90,8 +137,8 @@ class NfseWebForm(ft.Column):
         # Linha 3: Data Inicial | Data Final | Pasta Download
         row3 = ft.Row(
             [
-                self.data_inicial_input,
-                self.data_final_input,
+                self.container_data_inicial,
+                self.container_data_final,
                 self.download_folder_input,
             ],
             alignment=ft.MainAxisAlignment.CENTER,
