@@ -44,11 +44,49 @@ class NfseWebForm(ft.Column):
             width=300,
         )
 
-        # CNPJs - seletor de arquivo .txt
+        # CNPJs - seletor de arquivo .txt + botão de edição
         self.cnpjs_file_input = FileInput(
             self._page, label="Arquivo de CNPJs (.txt)", icon=ft.Icons.TEXT_SNIPPET
         )
-        self.cnpjs_file_input.width = 300
+        self.cnpjs_file_input.expand = True  # Expande dentro do Row container
+
+        # Editor de CNPJs - Dialog
+        self.cnpjs_editor_field = ft.TextField(
+            label="CNPJs (um por linha)",
+            multiline=True,
+            min_lines=10,
+            max_lines=15,
+            expand=True,
+        )
+
+        self.cnpjs_editor_dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Editar Lista de CNPJs"),
+            content=ft.Container(
+                content=self.cnpjs_editor_field,
+                width=400,
+                height=300,
+            ),
+            actions=[
+                ft.TextButton("Cancelar", on_click=self._close_cnpjs_editor),
+                ft.TextButton("Salvar", on_click=self._save_cnpjs),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+
+        btn_edit_cnpjs = ft.IconButton(
+            icon=ft.Icons.EDIT,
+            on_click=self._open_cnpjs_editor,
+            tooltip="Editar lista de CNPJs",
+        )
+
+        # Container Row para CNPJs (FileInput + botão editar)
+        self.container_cnpjs = ft.Row(
+            [self.cnpjs_file_input, btn_edit_cnpjs],
+            width=350,
+            spacing=5,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
 
         # Datas
         # Funçāo auxiliar para atualizar o campo de texto ao selecionar data
@@ -129,7 +167,7 @@ class NfseWebForm(ft.Column):
 
         # Linha 2: Usuário | Senha | Arquivo CNPJs
         row2 = ft.Row(
-            [self.usuario_input, self.senha_input, self.cnpjs_file_input],
+            [self.usuario_input, self.senha_input, self.container_cnpjs],
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
         )
@@ -196,3 +234,38 @@ class NfseWebForm(ft.Column):
             print(f"Arquivo profile.toml não encontrado em: {PROFILE_PATH}")
         except Exception as ex:
             print(f"Erro ao carregar perfil: {ex}")
+
+    def _open_cnpjs_editor(self, e):
+        """Abre o editor de CNPJs e carrega o conteúdo do arquivo."""
+        file_path = self.cnpjs_file_input.value
+        if file_path:
+            try:
+                resolved_path = get_file_path(file_path)
+                with open(resolved_path, "r", encoding="utf-8") as f:
+                    self.cnpjs_editor_field.value = f.read()
+            except FileNotFoundError:
+                self.cnpjs_editor_field.value = ""
+            except Exception as ex:
+                print(f"Erro ao ler arquivo de CNPJs: {ex}")
+                self.cnpjs_editor_field.value = ""
+        else:
+            self.cnpjs_editor_field.value = ""
+
+        self._page.show_dialog(self.cnpjs_editor_dialog)
+
+    def _close_cnpjs_editor(self, e):
+        """Fecha o editor de CNPJs sem salvar."""
+        self._page.pop_dialog()
+
+    def _save_cnpjs(self, e):
+        """Salva o conteúdo editado no arquivo de CNPJs."""
+        file_path = self.cnpjs_file_input.value
+        if file_path:
+            try:
+                resolved_path = get_file_path(file_path)
+                with open(resolved_path, "w", encoding="utf-8") as f:
+                    f.write(self.cnpjs_editor_field.value)
+                print(f"CNPJs salvos em: {resolved_path}")
+            except Exception as ex:
+                print(f"Erro ao salvar arquivo de CNPJs: {ex}")
+        self._page.pop_dialog()
