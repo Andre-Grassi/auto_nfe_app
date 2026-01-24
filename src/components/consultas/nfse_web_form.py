@@ -5,11 +5,11 @@ import flet as ft
 try:
     import tomllib
 except ImportError:
-    # Fall back to tomli for Python versions < 3.11
     import tomli as tomllib
 
 from components.file_input import FileInput, FileType
 from components.load_profile_btn import LoadProfileBtn
+from components.empresas_editor_dialog import EmpresasEditorDialog
 
 from config.paths import PROFILE_PATH, EMPRESAS_NFSE_PATH
 
@@ -41,48 +41,19 @@ class NfseWebForm(ft.Column):
             width=300,
         )
 
-        # CNPJs - seletor de arquivo .txt + botão de edição
-        self.cnpjs_file_input = FileInput(
-            self._page, label="Arquivo de CNPJs (.txt)", icon=ft.Icons.TEXT_SNIPPET
-        )
-        self.cnpjs_file_input.expand = True  # Expande dentro do Row container
-
-        # Editor de CNPJs - Dialog
-        self.cnpjs_editor_field = ft.TextField(
-            label="CNPJs (um por linha)",
-            multiline=True,
-            min_lines=10,
-            max_lines=15,
-            expand=True,
+        # ====== Empresas/CNPJs Editor ======
+        self.empresas_editor = EmpresasEditorDialog(
+            page=self._page,
+            file_path=EMPRESAS_NFSE_PATH,
+            title="Gerenciar Empresas",
         )
 
-        self.cnpjs_editor_dialog = ft.AlertDialog(
-            modal=True,
-            title=ft.Text("Editar Lista de CNPJs"),
-            content=ft.Container(
-                content=self.cnpjs_editor_field,
-                width=400,
-                height=300,
-            ),
-            actions=[
-                ft.TextButton("Cancelar", on_click=self._close_cnpjs_editor),
-                ft.TextButton("Salvar", on_click=self._save_cnpjs),
-            ],
-            actions_alignment=ft.MainAxisAlignment.END,
-        )
-
-        btn_edit_cnpjs = ft.IconButton(
-            icon=ft.Icons.EDIT,
-            on_click=self._open_cnpjs_editor,
-            tooltip="Editar lista de CNPJs",
-        )
-
-        # Container Row para CNPJs (FileInput + botão editar)
-        self.container_cnpjs = ft.Row(
-            [self.cnpjs_file_input, btn_edit_cnpjs],
-            width=350,
-            spacing=5,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        # Botão para abrir editor de empresas
+        btn_edit_empresas = ft.Button(
+            content=ft.Text("Empresas"),
+            icon=ft.Icons.BUSINESS,
+            on_click=self.empresas_editor.open,
+            width=150,
         )
 
         # Datas
@@ -162,9 +133,9 @@ class NfseWebForm(ft.Column):
             spacing=20,
         )
 
-        # Linha 2: Usuário | Senha | Arquivo CNPJs
+        # Linha 2: Usuário | Senha | Botão Empresas
         row2 = ft.Row(
-            [self.usuario_input, self.senha_input, self.container_cnpjs],
+            [self.usuario_input, self.senha_input, btn_edit_empresas],
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
         )
@@ -185,18 +156,12 @@ class NfseWebForm(ft.Column):
     def get_values(self):
         """
         Retorna os valores dos campos.
-        Nota: O FileInput possui uma propriedade .value que retorna o texto interno.
+        CNPJs/CPFs são obtidos do editor de empresas (apenas selecionados).
         """
-
-        # Carregar lista de cnpjs
-        cnpjs_txt = get_file_path(self.cnpjs_file_input.value)
-        with open(cnpjs_txt, "r") as f:
-            cnpjs = [line.strip() for line in f if line.strip()]
-
         return {
             "usuario": self.usuario_input.value,
             "senha": self.senha_input.value,
-            "cnpjs": cnpjs,
+            "cnpjs": self.empresas_editor.get_selected_cnpj_cpf(),
             "data_inicial": self.data_inicial_input.value,
             "data_final": self.data_final_input.value,
             "download_path": self.download_folder_input.value,
@@ -215,13 +180,11 @@ class NfseWebForm(ft.Column):
             # Preenche os campos do formulário
             self.usuario_input.value = nfse_data.get("usuario", "")
             self.senha_input.value = nfse_data.get("senha", "")
-            self.cnpjs_file_input.value = nfse_data.get("caminho_cnpjs", "")
             self.download_folder_input.value = nfse_data.get("pasta_relatorio", "")
 
             # Atualiza a interface
             self.usuario_input.update()
             self.senha_input.update()
-            self.cnpjs_file_input.update()
             self.download_folder_input.update()
             self.update()
 
@@ -231,38 +194,3 @@ class NfseWebForm(ft.Column):
             print(f"Arquivo profile.toml não encontrado em: {PROFILE_PATH}")
         except Exception as ex:
             print(f"Erro ao carregar perfil: {ex}")
-
-    def _open_cnpjs_editor(self, e):
-        """Abre o editor de CNPJs e carrega o conteúdo do arquivo."""
-        file_path = self.cnpjs_file_input.value
-        if file_path:
-            try:
-                resolved_path = get_file_path(file_path)
-                with open(resolved_path, "r", encoding="utf-8") as f:
-                    self.cnpjs_editor_field.value = f.read()
-            except FileNotFoundError:
-                self.cnpjs_editor_field.value = ""
-            except Exception as ex:
-                print(f"Erro ao ler arquivo de CNPJs: {ex}")
-                self.cnpjs_editor_field.value = ""
-        else:
-            self.cnpjs_editor_field.value = ""
-
-        self._page.show_dialog(self.cnpjs_editor_dialog)
-
-    def _close_cnpjs_editor(self, e):
-        """Fecha o editor de CNPJs sem salvar."""
-        self._page.pop_dialog()
-
-    def _save_cnpjs(self, e):
-        """Salva o conteúdo editado no arquivo de CNPJs."""
-        file_path = self.cnpjs_file_input.value
-        if file_path:
-            try:
-                resolved_path = get_file_path(file_path)
-                with open(resolved_path, "w", encoding="utf-8") as f:
-                    f.write(self.cnpjs_editor_field.value)
-                print(f"CNPJs salvos em: {resolved_path}")
-            except Exception as ex:
-                print(f"Erro ao salvar arquivo de CNPJs: {ex}")
-        self._page.pop_dialog()
