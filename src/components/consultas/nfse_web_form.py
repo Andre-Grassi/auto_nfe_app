@@ -8,13 +8,10 @@ except ImportError:
     # Fall back to tomli for Python versions < 3.11
     import tomli as tomllib
 
-# Certifique-se de que o import aponta para onde você salvou o componente FileInput
 from components.file_input import FileInput, FileType
 from components.load_profile_btn import LoadProfileBtn
 
-from utils.utils import get_file_path
-
-from constants import PROFILE_PATH
+from config.paths import PROFILE_PATH, EMPRESAS_NFSE_PATH
 
 
 class NfseWebForm(ft.Column):
