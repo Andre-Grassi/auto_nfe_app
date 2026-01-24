@@ -1,5 +1,16 @@
 import flet as ft
 import asyncio
+import os
+
+from shutil import copyfile
+
+from config.paths import (
+    APPDATA_DIR,
+    PROFILE_PATH,
+    PROFILE_TEMPLATE_PATH,
+    EMPRESAS_NFSE_PATH,
+    EMPRESAS_NFSE_TEMPLATE_PATH,
+)
 
 # --- Views ---
 from views.home import HomeView
@@ -11,6 +22,14 @@ from auto_nfe import ClientNfe
 
 
 async def main(page: ft.Page):
+    # --- Configurações ---
+    # Garante que dados no AppData existam
+    os.makedirs(APPDATA_DIR, exist_ok=True)
+    if not os.path.exists(PROFILE_PATH):
+        copyfile("assets/profile_template.toml", PROFILE_PATH)
+    if not os.path.exists(EMPRESAS_NFSE_PATH):
+        copyfile(EMPRESAS_NFSE_TEMPLATE_PATH, EMPRESAS_NFSE_PATH)
+
     # --- Janela ---
     page.title = "Auto Nfe"
     page.theme_mode = ft.ThemeMode.DARK
@@ -64,4 +83,4 @@ async def main(page: ft.Page):
     route_change()
 
 
-ft.run(main=main)
+ft.run(main=main, assets_dir="../assets")
