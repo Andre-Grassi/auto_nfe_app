@@ -6,4 +6,6 @@ schemas/*
 *.xlsx
 *.pyc 
 .venv/*
+*.egg-info
 build/*
+chrome_profile*/
