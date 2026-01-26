@@ -46,9 +46,9 @@ class EmpresasEditorDialog:
         self._list = ft.Column(
             spacing=2,
             scroll=ft.ScrollMode.AUTO,
+            expand=True,  # Lista expande para ocupar espaço disponível
         )
 
-        # Botão para adicionar nova empresa
         btn_add = ft.TextButton(
             content=ft.Text("+ Adicionar Empresa"),
             on_click=self._add_row,
@@ -59,15 +59,25 @@ class EmpresasEditorDialog:
             modal=True,
             title=ft.Text(title, size=18, weight=ft.FontWeight.W_500),
             content=ft.Container(
-                content=ft.Column([self._list, btn_add]),
+                content=ft.Column(
+                    [self._list],
+                    expand=True,
+                    scroll=ft.ScrollMode.AUTO,
+                ),
                 width=600,
                 height=400,
             ),
             actions=[
-                ft.TextButton("Cancelar", on_click=self._close),
-                ft.TextButton("Salvar", on_click=self._save),
+                ft.Row(
+                    [
+                        btn_add,
+                        ft.Container(expand=True),  # Spacer
+                        ft.TextButton("Cancelar", on_click=self._close),
+                        ft.TextButton("Salvar", on_click=self._save),
+                    ],
+                    expand=True,
+                ),
             ],
-            actions_alignment=ft.MainAxisAlignment.END,
         )
 
     @property
