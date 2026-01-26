@@ -90,4 +90,8 @@ class FileInput(ft.Row):
     def value(self, new_value: str):
         """Atalho para settar o valor do texto de fora"""
         self.text_field.value = new_value
-        self.text_field.update()
+        try:
+            self.text_field.update()
+        except RuntimeError:
+            # Warn  
+            print("FileInput: Adicione o controle à pagina antes de settar o value")
