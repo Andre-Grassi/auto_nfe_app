@@ -51,6 +51,7 @@ class TableConfig:
     columns: list[FieldConfig] = field(default_factory=list)
     checkbox: bool = False  # Exibe checkbox para seleção de linhas
     checkbox_field: str = "selecionada"  # Campo para armazenar estado do checkbox
+    columns_per_row: int | None = None  # Colunas por linha (None = todas em uma linha)
 
 
 class TomlEditorDialog:
@@ -280,6 +281,26 @@ class TomlEditorDialog:
         table_data = self._data.get(cfg.key, [])
 
         for i, row_data in enumerate(table_data):
+            # Adiciona divisor entre entradas (não antes da primeira)
+            if i > 0:
+                divider = ft.Row(
+                    [
+                        ft.Container(
+                            content=ft.Divider(height=1, color=ft.Colors.OUTLINE_VARIANT),
+                            width=None,
+                            expand=True,
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                )
+                # Container para centralizar o divisor com 50% da largura
+                divider_container = ft.Container(
+                    content=divider,
+                    alignment=ft.Alignment.CENTER,
+                    padding=ft.Padding(left=100, right=100, top=15, bottom=15),
+                )
+                list_column.controls.append(divider_container)
+            
             row = self._create_table_row(cfg, i, row_data)
             list_column.controls.append(row)
 
@@ -289,7 +310,13 @@ class TomlEditorDialog:
             pass
 
     def _create_table_row(self, cfg: TableConfig, index: int, row_data: dict) -> ft.Control:
-        """Cria uma linha da tabela."""
+        """Cria uma linha da tabela (pode ter múltiplas linhas visuais)."""
+        
+        # Se columns_per_row está definido, divide em múltiplas linhas
+        if cfg.columns_per_row and len(cfg.columns) > cfg.columns_per_row:
+            return self._create_multirow_table_entry(cfg, index, row_data)
+        
+        # Layout padrão: tudo em uma linha
         controls = []
 
         # Checkbox (se configurado)
@@ -306,10 +333,10 @@ class TomlEditorDialog:
         for field_cfg in cfg.columns:
             text_field = ft.TextField(
                 value=str(row_data.get(field_cfg.key, "")),
-                hint_text=field_cfg.label,
+                label=field_cfg.label,
                 expand=field_cfg.expand,
                 width=field_cfg.width,
-                border_color=ft.Colors.TRANSPARENT,
+                border_color=ft.Colors.OUTLINE_VARIANT,
                 on_change=lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
                     c.key, idx, f.key, e.control.value
                 ),
@@ -334,6 +361,96 @@ class TomlEditorDialog:
             bgcolor=ft.Colors.SURFACE_CONTAINER_HIGH,
             border_radius=8,
             padding=ft.Padding(left=10, right=10, top=5, bottom=5),
+        )
+
+    def _create_multirow_table_entry(self, cfg: TableConfig, index: int, row_data: dict) -> ft.Control:
+        """Cria uma entrada de tabela com múltiplas linhas visuais."""
+        rows = []
+        cols_per_row = cfg.columns_per_row or 3
+        
+        # Primeira linha: checkbox + primeiras colunas + botão delete
+        first_row_controls = []
+        
+        if cfg.checkbox:
+            checkbox = ft.Checkbox(
+                value=row_data.get(cfg.checkbox_field, False),
+                on_change=lambda e, idx=index, c=cfg: self._update_table_field(
+                    c.key, idx, c.checkbox_field, e.control.value
+                ),
+            )
+            first_row_controls.append(checkbox)
+        
+        # Divide colunas em chunks
+        column_chunks = [
+            cfg.columns[i:i + cols_per_row]
+            for i in range(0, len(cfg.columns), cols_per_row)
+        ]
+        
+        # Primeira chunk na primeira linha
+        for field_cfg in column_chunks[0]:
+            text_field = ft.TextField(
+                value=str(row_data.get(field_cfg.key, "")),
+                label=field_cfg.label,
+                expand=True,
+                border_color=ft.Colors.OUTLINE_VARIANT,
+                on_change=lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
+                    c.key, idx, f.key, e.control.value
+                ),
+            )
+            first_row_controls.append(text_field)
+        
+        # Botão delete na primeira linha
+        delete_btn = ft.IconButton(
+            icon=ft.Icons.DELETE_OUTLINE,
+            icon_color=ft.Colors.RED_400,
+            tooltip="Remover",
+            on_click=lambda e, idx=index, c=cfg: self._remove_table_row(c, idx),
+        )
+        first_row_controls.append(delete_btn)
+        
+        rows.append(
+            ft.Row(
+                first_row_controls,
+                spacing=10,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        )
+        
+        # Linhas adicionais para o resto das colunas
+        for chunk in column_chunks[1:]:
+            row_controls = []
+            # Espaço para alinhar com checkbox
+            if cfg.checkbox:
+                row_controls.append(ft.Container(width=40))
+            
+            for field_cfg in chunk:
+                text_field = ft.TextField(
+                    value=str(row_data.get(field_cfg.key, "")),
+                    label=field_cfg.label,
+                    expand=True,
+                    border_color=ft.Colors.OUTLINE_VARIANT,
+                    on_change=lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
+                        c.key, idx, f.key, e.control.value
+                    ),
+                )
+                row_controls.append(text_field)
+            
+            # Espaço para alinhar com botão delete
+            row_controls.append(ft.Container(width=40))
+            
+            rows.append(
+                ft.Row(
+                    row_controls,
+                    spacing=10,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                )
+            )
+        
+        return ft.Container(
+            content=ft.Column(rows, spacing=15),
+            bgcolor=ft.Colors.SURFACE_CONTAINER_HIGH,
+            border_radius=8,
+            padding=ft.Padding(left=10, right=10, top=8, bottom=8),
         )
 
     def _update_table_field(self, table_key: str, index: int, field: str, value: Any):
