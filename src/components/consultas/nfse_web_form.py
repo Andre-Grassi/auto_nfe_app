@@ -10,6 +10,11 @@ except ImportError:
 from components.file_input import FileInput, FileType
 from components.load_profile_btn import LoadProfileBtn
 from components.empresas_editor_dialog import EmpresasEditorDialog
+from components.toml_editor_dialog import (
+    TomlEditorDialog,
+    SectionConfig,
+    FieldConfig,
+)
 
 from config.paths import PROFILE_PATH, EMPRESAS_NFSE_PATH
 
@@ -26,7 +31,34 @@ class NfseWebForm(ft.Column):
         self.spacing = 30
         self.alignment = ft.MainAxisAlignment.CENTER
 
+        # --- Credenciais ---
         self.load_profile_btn = LoadProfileBtn(self._load_profile)
+
+        # Editor de credenciais NFSe (profile.toml seção [nfse])
+        self.profile_editor = TomlEditorDialog(
+            page=self._page,
+            file_path=PROFILE_PATH,
+            title="Editar Credenciais NFSe",
+            config=[
+                SectionConfig(
+                    key="nfse",
+                    label="Credenciais NFSe",
+                    fields=[
+                        FieldConfig(key="usuario", label="Usuário"),
+                        FieldConfig(key="senha", label="Senha", password=True),
+                        FieldConfig(key="pasta_relatorio", label="Pasta Relatório"),
+                    ],
+                ),
+            ],
+        )
+
+        btn_edit_profile = ft.Button(
+            content=ft.Row(
+                [ft.Icon(ft.Icons.EDIT), ft.Text("Editar Credenciais")],
+                spacing=5,
+            ),
+            on_click=self.profile_editor.open,
+        )
 
         # --- Campos de Entrada Simples ---
         self.usuario_input = ft.TextField(
@@ -128,7 +160,7 @@ class NfseWebForm(ft.Column):
 
         # --- Layout (Grid) ---
         row1 = ft.Row(
-            [self.load_profile_btn],
+            [self.load_profile_btn, btn_edit_profile],
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
         )
