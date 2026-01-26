@@ -1,6 +1,7 @@
 [project]
 name = "auto-nfe-app"
-version = "0.10.0"
+version = "0.11.0"
+requires-python = ">=3.12,<3.15"
 
 dependencies = ["auto-nfe @ file:///F:/Dev/nfe_automatico", "flet>=0.80.1"]
 
