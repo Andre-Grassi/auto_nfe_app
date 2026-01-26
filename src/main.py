@@ -1,3 +1,19 @@
+# Compatibilidade com Python 3.12+ (distutils foi removido do stdlib)
+# Precisa vir ANTES de qualquer import que use undetected_chromedriver
+import sys
+import types
+
+try:
+    from distutils.version import LooseVersion  # noqa: F401
+except ImportError:
+    from packaging.version import Version as LooseVersion
+
+    # Cria módulo fake distutils.version para bibliotecas que ainda usam
+    distutils_version = types.ModuleType("distutils.version")
+    distutils_version.LooseVersion = LooseVersion
+    sys.modules["distutils"] = types.ModuleType("distutils")
+    sys.modules["distutils.version"] = distutils_version
+
 import flet as ft
 import asyncio
 import os
