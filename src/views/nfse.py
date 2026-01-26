@@ -115,6 +115,7 @@ class NfseView(ft.View):
                 data_inicial=data_inicial,
                 data_final=data_final,
                 download_path=form_data["download_path"],
+                headless=False
             )
 
             await client.consulta_relatorios(
