@@ -7,6 +7,7 @@ from auto_nfe import ClientNfe
 
 from components.consultas.planilha_form import PlanilhaForm
 from components.download_btn import DownloadBtn
+from components.toast import ToastManager
 
 
 class NfeView(ft.View):
@@ -43,9 +44,8 @@ class NfeView(ft.View):
             spacing=10,
         )
 
-        self.dlg_nfe_status = ft.AlertDialog(
-            title=ft.Text("Status do Download do NFe"), content=ft.Text("Alerta: ")
-        )
+        # Toast notifications
+        self.toast = ToastManager(page)
 
         self.controls = [
             self.title,
@@ -89,15 +89,7 @@ class NfeView(ft.View):
             self.page.run_task(run)
 
         def task_notification(message: str):
-            async def run():
-                self.dlg_nfe_status.content = ft.Text(message)
-                self.page.show_dialog(self.dlg_nfe_status)
-                self.page.update()
-                await asyncio.sleep(2)
-                self.page.pop_dialog()
-                self.page.update()
-
-            self.page.run_task(run)
+            self.toast.info(message)
 
         try:
             if len(form_data["cnpj_cpf"]) == 14:
@@ -149,11 +141,7 @@ class NfeView(ft.View):
         # Validação
         is_valid, error_msg = self.planilha_form.validate_inputs()
         if not is_valid:
-            self.page.snack_bar = ft.SnackBar(
-                ft.Text(error_msg or "Por favor, preencha todos os campos!")
-            )
-            self.page.snack_bar.open = True
-            self.page.update()
+            self.toast.error(error_msg)
             return
 
         self.form_data = form_data
