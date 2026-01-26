@@ -144,13 +144,13 @@ class NfeView(ft.View):
         """
         Evento de clique do botão. Prepara a UI e inicia a Thread.
         """
-        # 1. Obtém dados do formulário (precisa implementar get_values no PlanilhaForm)
         form_data = self.planilha_form.get_values()
 
-        # Validação simples
-        if not form_data:
+        # Validação
+        is_valid, error_msg = self.planilha_form.validate_inputs()
+        if not is_valid:
             self.page.snack_bar = ft.SnackBar(
-                ft.Text("Por favor, preencha todos os campos!")
+                ft.Text(error_msg or "Por favor, preencha todos os campos!")
             )
             self.page.snack_bar.open = True
             self.page.update()
