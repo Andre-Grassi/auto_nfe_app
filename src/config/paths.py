@@ -66,3 +66,6 @@ PROFILE_TEMPLATE_PATH = get_assets_file_path(
 )  # No need for complex path resolution, since it's inside assets/
 EMPRESAS_NFSE_PATH = get_appdata_file_path("empresas_nfse.toml")
 EMPRESAS_NFSE_TEMPLATE_PATH = get_assets_file_path("empresas_nfse_template.toml")
+EMPRESAS_NFE_PATH = get_appdata_file_path("empresas_nfe.toml")
+EMPRESAS_NFE_TEMPLATE_PATH = get_assets_file_path("empresas_nfe_template.toml")
+

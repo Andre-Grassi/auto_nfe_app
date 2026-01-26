@@ -1,8 +1,18 @@
 import flet as ft
 import re
 
-# Certifique-se de que o import aponta para onde você salvou o componente FileInput
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
+
 from components.file_input import FileInput, FileType
+from components.toml_editor_dialog import (
+    TomlEditorDialog,
+    TableConfig,
+    FieldConfig,
+)
+from config.paths import EMPRESAS_NFE_PATH
 
 
 class PlanilhaForm(ft.Column):
@@ -15,6 +25,47 @@ class PlanilhaForm(ft.Column):
         self._page = page
         self.spacing = 30
         self.alignment = ft.MainAxisAlignment.CENTER
+
+        # --- Perfis ---
+        # Editor de perfis NFe (empresas_nfe.toml)
+        self.profile_editor = TomlEditorDialog(
+            page=self._page,
+            file_path=EMPRESAS_NFE_PATH,
+            title="Editar Perfis NFe",
+            config=[
+                TableConfig(
+                    key="empresas",
+                    label="Perfis de Empresa",
+                    columns_per_row=3,  # Divide em 2 linhas visuais
+                    columns=[
+                        FieldConfig(key="nome", label="Nome", expand=True),
+                        FieldConfig(key="cnpj_cpf", label="CNPJ/CPF", width=150),
+                        FieldConfig(key="caminho_certificado", label="Certificado", file_picker=True),
+                        FieldConfig(key="senha", label="Senha", password=True, width=120),
+                        FieldConfig(key="caminho_relacao", label="Planilha", file_picker=True),
+                        FieldConfig(key="pasta_xml", label="Pasta XML", folder_picker=True),
+                    ],
+                ),
+            ],
+        )
+
+        # Botão Carregar Perfil (abre seletor)
+        btn_load_profile = ft.Button(
+            content=ft.Row(
+                [ft.Icon(ft.Icons.DOWNLOAD), ft.Text("Carregar Perfil")],
+                spacing=5,
+            ),
+            on_click=self._show_profile_selector,
+        )
+
+        # Botão Editar Perfis
+        btn_edit_profiles = ft.Button(
+            content=ft.Row(
+                [ft.Icon(ft.Icons.EDIT), ft.Text("Editar Perfis")],
+                spacing=5,
+            ),
+            on_click=self.profile_editor.open,
+        )
 
         # --- Campos de Entrada Simples ---
         self.cnpj_cpf_input = ft.TextField(
@@ -53,6 +104,13 @@ class PlanilhaForm(ft.Column):
         self.folder_input.width = 300
 
         # --- Layout (Grid) ---
+        # Linha 0: Botões de Perfil
+        row0 = ft.Row(
+            [btn_load_profile, btn_edit_profiles],
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=20,
+        )
+
         # Linha 1: CNPJ | Certificado | Senha
         row1 = ft.Row(
             [self.cnpj_cpf_input, self.cert_input, self.password_input],
@@ -67,7 +125,77 @@ class PlanilhaForm(ft.Column):
             spacing=20,
         )
 
-        self.controls.extend([row1, row2])
+        self.controls.extend([row0, row1, row2])
+
+    def _get_profiles(self) -> list[dict]:
+        """Carrega lista de perfis do arquivo TOML."""
+        try:
+            with open(EMPRESAS_NFE_PATH, "rb") as f:
+                data = tomllib.load(f)
+            return data.get("empresas", [])
+        except Exception:
+            return []
+
+    def _show_profile_selector(self, e):
+        """Exibe diálogo para selecionar perfil."""
+        profiles = self._get_profiles()
+
+        if not profiles:
+            self._page.snack_bar = ft.SnackBar(
+                ft.Text("Nenhum perfil encontrado. Clique em 'Editar Perfis' para criar.")
+            )
+            self._page.snack_bar.open = True
+            self._page.update()
+            return
+
+        # Cria lista de opções
+        options = []
+        for i, profile in enumerate(profiles):
+            nome = profile.get("nome", f"Perfil {i+1}")
+            cnpj = profile.get("cnpj_cpf", "")
+            options.append(
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.BUSINESS),
+                    title=ft.Text(nome),
+                    subtitle=ft.Text(cnpj),
+                    on_click=lambda ev, idx=i: self._load_profile(idx),
+                )
+            )
+
+        # Diálogo de seleção
+        dlg = ft.AlertDialog(
+            title=ft.Text("Selecionar Perfil"),
+            content=ft.Container(
+                content=ft.Column(options, scroll=ft.ScrollMode.AUTO),
+                width=400,
+                height=300,
+            ),
+            actions=[ft.TextButton("Cancelar", on_click=lambda e: self._page.pop_dialog())],
+        )
+        self._page.show_dialog(dlg)
+
+    def _load_profile(self, index: int):
+        """Carrega os dados de um perfil específico nos campos."""
+        self._page.pop_dialog()
+
+        profiles = self._get_profiles()
+        if 0 <= index < len(profiles):
+            profile = profiles[index]
+
+            # Preenche os campos
+            self.cnpj_cpf_input.value = profile.get("cnpj_cpf", "")
+            self.cert_input.value = profile.get("caminho_certificado", "")
+            self.password_input.value = profile.get("senha", "")
+            self.sheet_input.value = profile.get("caminho_relacao", "")
+            self.folder_input.value = profile.get("pasta_xml", "")
+
+            # Atualiza a interface
+            try:
+                self.cnpj_cpf_input.update()
+                self.password_input.update()
+                self.update()
+            except RuntimeError:
+                pass
 
     def _clean_cnpj_cpf(self, value: str) -> str:
         """Remove caracteres não numéricos do CNPJ/CPF."""

@@ -26,6 +26,8 @@ from config.paths import (
     PROFILE_TEMPLATE_PATH,
     EMPRESAS_NFSE_PATH,
     EMPRESAS_NFSE_TEMPLATE_PATH,
+    EMPRESAS_NFE_PATH,
+    EMPRESAS_NFE_TEMPLATE_PATH,
 )
 
 # --- Views ---
@@ -45,6 +47,8 @@ async def main(page: ft.Page):
         copyfile(PROFILE_TEMPLATE_PATH, PROFILE_PATH)
     if not os.path.exists(EMPRESAS_NFSE_PATH):
         copyfile(EMPRESAS_NFSE_TEMPLATE_PATH, EMPRESAS_NFSE_PATH)
+    if not os.path.exists(EMPRESAS_NFE_PATH):
+        copyfile(EMPRESAS_NFE_TEMPLATE_PATH, EMPRESAS_NFE_PATH)
 
     # --- Janela ---
     page.title = "Auto Nfe"
