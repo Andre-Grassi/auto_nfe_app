@@ -26,7 +26,7 @@ async def main(page: ft.Page):
     # Garante que dados no AppData existam
     os.makedirs(APPDATA_DIR, exist_ok=True)
     if not os.path.exists(PROFILE_PATH):
-        copyfile("assets/profile_template.toml", PROFILE_PATH)
+        copyfile(PROFILE_TEMPLATE_PATH, PROFILE_PATH)
     if not os.path.exists(EMPRESAS_NFSE_PATH):
         copyfile(EMPRESAS_NFSE_TEMPLATE_PATH, EMPRESAS_NFSE_PATH)
 
