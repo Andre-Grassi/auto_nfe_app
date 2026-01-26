@@ -1,11 +1,14 @@
+# ====== Arquivos Pessoais ======
 *.pfx
 schemas/*
 *xml
 *.csv
 *.xls
 *.xlsx
-*.pyc 
+chrome_profile*/
+
+# ====== Arquivos Automáticos Python ======
 .venv/*
 *.egg-info
 build/*
-chrome_profile*/
+*.pyc 
