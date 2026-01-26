@@ -46,7 +46,7 @@ class NfseWebForm(ft.Column):
                     fields=[
                         FieldConfig(key="usuario", label="Usuário"),
                         FieldConfig(key="senha", label="Senha", password=True),
-                        FieldConfig(key="pasta_relatorio", label="Pasta Relatório"),
+                        FieldConfig(key="pasta_relatorio", label="Pasta Relatório", folder_picker=True),
                     ],
                 ),
             ],

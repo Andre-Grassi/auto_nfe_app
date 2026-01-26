@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from typing import Any
 import flet as ft
 
+from components.file_input import FileInput, FileType
+
 try:
     import tomllib
 except ImportError:
@@ -27,6 +29,8 @@ class FieldConfig:
     password: bool = False
     expand: bool = False
     width: int | None = None
+    file_picker: bool = False  # Adiciona botão para selecionar arquivo
+    folder_picker: bool = False  # Adiciona botão para selecionar pasta
 
 
 @dataclass
@@ -184,16 +188,29 @@ class TomlEditorDialog:
 
         for field_cfg in cfg.fields:
             ref_key = f"{cfg.key}.{field_cfg.key}"
-            text_field = ft.TextField(
-                label=field_cfg.label or field_cfg.key,
-                value=str(section_data.get(field_cfg.key, "")),
-                password=field_cfg.password,
-                can_reveal_password=field_cfg.password,
-                expand=field_cfg.expand,
-                width=field_cfg.width,
-            )
-            self._field_refs[ref_key] = text_field
-            fields_column.controls.append(text_field)
+
+            # Se tem file_picker ou folder_picker, usa FileInput
+            if field_cfg.file_picker or field_cfg.folder_picker:
+                file_type = FileType.FOLDER if field_cfg.folder_picker else FileType.FILE
+                file_input = FileInput(
+                    page=self._page,
+                    label=field_cfg.label or field_cfg.key,
+                    file_type=file_type,
+                )
+                fields_column.controls.append(file_input)
+                file_input.value = str(section_data.get(field_cfg.key, ""))
+                self._field_refs[ref_key] = file_input.text_field
+            else:
+                text_field = ft.TextField(
+                    label=field_cfg.label or field_cfg.key,
+                    value=str(section_data.get(field_cfg.key, "")),
+                    password=field_cfg.password,
+                    can_reveal_password=field_cfg.password,
+                    expand=field_cfg.expand,
+                    width=field_cfg.width,
+                )
+                self._field_refs[ref_key] = text_field
+                fields_column.controls.append(text_field)
 
         return ft.Container(
             content=ft.Column(
