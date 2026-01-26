@@ -16,6 +16,7 @@ include = ["F:/Dev/nfe_automatico/src/auto_nfe/schemas/*.xml"]
 additional_files = [
     { source = "src/auto_nfe/schemas/*.xml", target = "auto_nfe/schemas" },
 ]
+assets = "assets"
 
 copyright = "Copyright (C) 2026 by Andre Grassi de Jesus"
 
