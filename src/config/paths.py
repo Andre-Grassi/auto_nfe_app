@@ -16,7 +16,7 @@ def _get_project_root() -> str:
 
 PROJECT_ROOT = _get_project_root()
 APPDATA_DIR = os.path.join(os.getenv("APPDATA", ""), APP_NAME)
-ASSETS_DIR = os.path.join(PROJECT_ROOT, "assets")
+ASSETS_DIR = os.path.join(PROJECT_ROOT, "src/assets")
 
 
 # ====== Path Getters ======
