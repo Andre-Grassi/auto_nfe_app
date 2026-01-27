@@ -14,7 +14,7 @@ class FileInput(ft.Row):
         page: ft.Page,
         label: str,
         file_type: FileType = FileType.FILE,
-        icon: ft.Icons = ft.Icons.FOLDER_OPEN,
+        icon: str | None = None,
     ):
         """
         Componente que junta um Input de Texto com um Seletor de Arquivos nativo.
@@ -24,6 +24,14 @@ class FileInput(ft.Row):
         self._page = page
         self.vertical_alignment = ft.CrossAxisAlignment.CENTER
         self.spacing = 10
+
+        # Define ícone dinamicamente se não foi passado
+        if icon is None:
+            icon = (
+                ft.Icons.DESCRIPTION
+                if file_type == FileType.FILE
+                else ft.Icons.FOLDER_OPEN
+            )
 
         # 2. O Campo de Texto (Visível)
         self.text_field = ft.TextField(
@@ -93,5 +101,5 @@ class FileInput(ft.Row):
         try:
             self.text_field.update()
         except RuntimeError:
-            # Warn  
+            # Warn
             print("FileInput: Adicione o controle à pagina antes de settar o value")
