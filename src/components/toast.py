@@ -104,7 +104,7 @@ class ToastManager:
         message: str,
         toast_type: ToastType = ToastType.INFO,
         duration_ms: int | None = None,
-        icon: ft.Icons | None = None,
+        icon: str | None = None, # icons are strings internally
     ):
         """
         Exibe uma notificação toast.
