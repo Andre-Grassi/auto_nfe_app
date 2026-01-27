@@ -331,17 +331,38 @@ class TomlEditorDialog:
 
         # Campos
         for field_cfg in cfg.columns:
-            text_field = ft.TextField(
-                value=str(row_data.get(field_cfg.key, "")),
-                label=field_cfg.label,
-                expand=field_cfg.expand,
-                width=field_cfg.width,
-                border_color=ft.Colors.OUTLINE_VARIANT,
-                on_change=lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
-                    c.key, idx, f.key, e.control.value
-                ),
-            )
-            controls.append(text_field)
+            # Se tem file_picker ou folder_picker, usa FileInput
+            if field_cfg.file_picker or field_cfg.folder_picker:
+                file_type = FileType.FOLDER if field_cfg.folder_picker else FileType.FILE
+                file_input = FileInput(
+                    page=self._page,
+                    label=field_cfg.label or field_cfg.key,
+                    file_type=file_type,
+                )
+                file_input.value = str(row_data.get(field_cfg.key, ""))
+                # Registra callback de mudança no text_field interno
+                file_input.text_field.on_change = (
+                    lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
+                        c.key, idx, f.key, e.control.value
+                    )
+                )
+                if field_cfg.expand:
+                    file_input.expand = True
+                elif field_cfg.width:
+                    file_input.width = field_cfg.width
+                controls.append(file_input)
+            else:
+                text_field = ft.TextField(
+                    value=str(row_data.get(field_cfg.key, "")),
+                    label=field_cfg.label,
+                    expand=field_cfg.expand,
+                    width=field_cfg.width,
+                    border_color=ft.Colors.OUTLINE_VARIANT,
+                    on_change=lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
+                        c.key, idx, f.key, e.control.value
+                    ),
+                )
+                controls.append(text_field)
 
         # Botão deletar
         delete_btn = ft.IconButton(
@@ -388,16 +409,33 @@ class TomlEditorDialog:
         
         # Primeira chunk na primeira linha
         for field_cfg in column_chunks[0]:
-            text_field = ft.TextField(
-                value=str(row_data.get(field_cfg.key, "")),
-                label=field_cfg.label,
-                expand=True,
-                border_color=ft.Colors.OUTLINE_VARIANT,
-                on_change=lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
-                    c.key, idx, f.key, e.control.value
-                ),
-            )
-            first_row_controls.append(text_field)
+            # Se tem file_picker ou folder_picker, usa FileInput
+            if field_cfg.file_picker or field_cfg.folder_picker:
+                file_type = FileType.FOLDER if field_cfg.folder_picker else FileType.FILE
+                file_input = FileInput(
+                    page=self._page,
+                    label=field_cfg.label or field_cfg.key,
+                    file_type=file_type,
+                )
+                file_input.value = str(row_data.get(field_cfg.key, ""))
+                file_input.text_field.on_change = (
+                    lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
+                        c.key, idx, f.key, e.control.value
+                    )
+                )
+                file_input.expand = True
+                first_row_controls.append(file_input)
+            else:
+                text_field = ft.TextField(
+                    value=str(row_data.get(field_cfg.key, "")),
+                    label=field_cfg.label,
+                    expand=True,
+                    border_color=ft.Colors.OUTLINE_VARIANT,
+                    on_change=lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
+                        c.key, idx, f.key, e.control.value
+                    ),
+                )
+                first_row_controls.append(text_field)
         
         # Botão delete na primeira linha
         delete_btn = ft.IconButton(
@@ -424,16 +462,33 @@ class TomlEditorDialog:
                 row_controls.append(ft.Container(width=40))
             
             for field_cfg in chunk:
-                text_field = ft.TextField(
-                    value=str(row_data.get(field_cfg.key, "")),
-                    label=field_cfg.label,
-                    expand=True,
-                    border_color=ft.Colors.OUTLINE_VARIANT,
-                    on_change=lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
-                        c.key, idx, f.key, e.control.value
-                    ),
-                )
-                row_controls.append(text_field)
+                # Se tem file_picker ou folder_picker, usa FileInput
+                if field_cfg.file_picker or field_cfg.folder_picker:
+                    file_type = FileType.FOLDER if field_cfg.folder_picker else FileType.FILE
+                    file_input = FileInput(
+                        page=self._page,
+                        label=field_cfg.label or field_cfg.key,
+                        file_type=file_type,
+                    )
+                    file_input.value = str(row_data.get(field_cfg.key, ""))
+                    file_input.text_field.on_change = (
+                        lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
+                            c.key, idx, f.key, e.control.value
+                        )
+                    )
+                    file_input.expand = True
+                    row_controls.append(file_input)
+                else:
+                    text_field = ft.TextField(
+                        value=str(row_data.get(field_cfg.key, "")),
+                        label=field_cfg.label,
+                        expand=True,
+                        border_color=ft.Colors.OUTLINE_VARIANT,
+                        on_change=lambda e, idx=index, c=cfg, f=field_cfg: self._update_table_field(
+                            c.key, idx, f.key, e.control.value
+                        ),
+                    )
+                    row_controls.append(text_field)
             
             # Espaço para alinhar com botão delete
             row_controls.append(ft.Container(width=40))
