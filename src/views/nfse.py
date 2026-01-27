@@ -118,7 +118,9 @@ class NfseView(ft.View):
                 headless=False
             )
 
-            await client.consulta_relatorios(
+            # Executa função bloqueante em thread separada
+            await asyncio.to_thread(
+                client.consulta_relatorios,
                 callback_progress=task_progress,
             )
 
