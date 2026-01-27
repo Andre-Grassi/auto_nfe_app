@@ -3,7 +3,7 @@ import threading
 import asyncio
 import time
 
-from auto_nfe import ClientNfe
+from auto_nfe import ClientNfe, CancelledException
 
 from components.consultas.planilha_form import PlanilhaForm
 from components.download_btn import DownloadBtn
@@ -28,8 +28,22 @@ class NfeView(ft.View):
 
         # --- Elementos do Formulário de Planilha ---
         self.planilha_form = PlanilhaForm(page)
+
         # --- Elementos da Área de Ação (Botão e Progresso) ---
         self.download_btn = DownloadBtn(self.handle_download)
+
+        # Botão Cancelar (mesmo estilo do DownloadBtn, mas vermelho)
+        self.cancel_btn = ft.Button(
+            content=ft.Text("Cancelar"),
+            on_click=self.handle_cancel,
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(radius=20),
+                padding=ft.padding.symmetric(horizontal=30, vertical=15),
+                bgcolor=ft.Colors.RED_700,
+            ),
+            icon=ft.Icons.CANCEL,
+            visible=False,  # Escondido por padrão
+        )
 
         self.progress_text = ft.Text("Baixando notas...", size=16, visible=False)
         self.progress_bar = ft.ProgressBar(
@@ -38,7 +52,7 @@ class NfeView(ft.View):
 
         # Container para a Área de Ação para manter o layout
         self.action_area = ft.Column(
-            [self.download_btn, self.progress_text, self.progress_bar],
+            [self.download_btn, self.cancel_btn, self.progress_text, self.progress_bar],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=10,
@@ -57,6 +71,10 @@ class NfeView(ft.View):
         # --- Alinhamento ---
         self.vertical_alignment = ft.MainAxisAlignment.CENTER
         self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+
+        # --- Estado interno ---
+        self._client: ClientNfe | None = None
+        self._cancel_event: threading.Event | None = None
 
     async def update_progress_ui(self, current_step, total_steps):
         """
@@ -81,6 +99,7 @@ class NfeView(ft.View):
         """
 
         form_data = self.form_data
+        self._cancel_event = threading.Event()
 
         def task_progress(current, total):
             async def run():
@@ -93,13 +112,13 @@ class NfeView(ft.View):
 
         try:
             if len(form_data["cnpj_cpf"]) == 14:
-                client = ClientNfe(
+                self._client = ClientNfe(
                     cnpj=form_data["cnpj_cpf"],
                     cert_pfx_path=form_data["cert_path"],
                     cert_password=form_data["password"],
                 )
             elif len(form_data["cnpj_cpf"]) == 11:
-                client = ClientNfe(
+                self._client = ClientNfe(
                     cpf=form_data["cnpj_cpf"],
                     cert_pfx_path=form_data["cert_path"],
                     cert_password=form_data["password"],
@@ -109,11 +128,12 @@ class NfeView(ft.View):
 
             print(form_data["folder_path"])
 
-            await client.consulta_planilha(
+            await self._client.consulta_planilha(
                 form_data["sheet_path"],
                 form_data["folder_path"],
                 callback_progress=task_progress,
                 callback_status=task_notification,
+                cancel_event=self._cancel_event,
             )
 
             # Sucesso
@@ -121,15 +141,26 @@ class NfeView(ft.View):
             self.progress_text.color = ft.Colors.GREEN
             self.progress_bar.value = 1.0
 
+        except CancelledException:
+            # Cancelamento gracioso - esconde UI
+            self.progress_bar.visible = False
+            self.progress_text.visible = False
+
         except Exception as e:
-            # Erro
+            # Erro inesperado
             self.progress_text.value = f"Erro: {str(e)}"
             self.progress_text.color = ft.Colors.RED
 
         finally:
+            # Limpa referências
+            self._client = None
+            self._cancel_event = None
+
             # Restaura o botão independentemente do resultado
             self.download_btn.disabled = False
             self.download_btn.content = "Baixar"
+            self.cancel_btn.visible = False
+            self.cancel_btn.disabled = False
             self.update()
 
     def handle_download(self, e):
@@ -148,6 +179,7 @@ class NfeView(ft.View):
 
         # 2. Configura UI para estado de "Carregando"
         self.download_btn.disabled = True
+        self.cancel_btn.visible = True  # Mostra botão cancelar
         self.progress_text.visible = True
         self.progress_bar.visible = True
         self.progress_text.value = "Iniciando conexão..."
@@ -155,10 +187,19 @@ class NfeView(ft.View):
         self.update()
 
         # 3. Inicia a Thread
-        # Passamos form_data como argumento para a thread não acessar a UI diretamente
-        # lock = threading.Lock()
-        # self.lock = lock
         self.page.run_task(self._run_background_task)
+
+    def handle_cancel(self, e):
+        """
+        Cancela a execução do consulta_planilha via cancel_event.
+        """
+        if self._cancel_event:
+            self._cancel_event.set()
+
+        self.progress_text.value = "Cancelando..."
+        self.progress_text.color = ft.Colors.ORANGE
+        self.cancel_btn.disabled = True
+        self.update()
 
     async def go_back(self, e, page: ft.Page):
         # se houver mais de uma view, remove a atual e navega para a anterior
