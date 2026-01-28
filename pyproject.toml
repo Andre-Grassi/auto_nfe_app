@@ -1,6 +1,6 @@
 [project]
 name = "auto-nfe-app"
-version = "0.18.3"
+version = "0.18.4"
 requires-python = ">=3.12,<3.15"
 
 dependencies = [
@@ -16,6 +16,7 @@ requires = ["setuptools>=80.0"]
 
 [tool.flet]
 product = "Auto NFe"
+company = "Andre Grassi de Jesus"
 compile.app = true # --compile-app
 compile.packages = true # --compile-packages
 compile.cleanup = true # --cleanup-on-compile
