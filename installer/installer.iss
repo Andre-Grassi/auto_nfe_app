@@ -2,7 +2,10 @@
 ; Criado para criar um instalador Windows com atalho no Menu Iniciar
 
 #define MyAppName "Auto NFe"
-#define MyAppVersion "0.18.0"
+; Versão é passada via linha de comando pelo build_installer.ps1
+#ifndef MyAppVersion
+  #define MyAppVersion "0.1.0"
+#endif
 #define MyAppPublisher "Andre Grassi de Jesus"
 #define MyAppExeName "auto_nfe_app.exe"
 #define MyAppCopyright "Copyright (C) 2026 by Andre Grassi de Jesus"
