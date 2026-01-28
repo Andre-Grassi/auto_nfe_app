@@ -32,6 +32,6 @@ pip install ..\nfe_automatico\
 
 # Build with Flet
 Write-Host "Building with Flet..." -ForegroundColor Green
-flet build windows
+flet build windows --clear-cache
 
 Write-Host "Build complete!" -ForegroundColor Green
