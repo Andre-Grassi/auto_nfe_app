@@ -7,6 +7,7 @@ from auto_nfe import ClientNfseWeb, CancelledException
 
 from components.consultas.nfse_web_form import NfseWebForm
 from components.download_btn import DownloadBtn
+from config.paths import CHROME_PROFILE_PATH
 
 
 class NfseView(ft.View):
@@ -133,6 +134,7 @@ class NfseView(ft.View):
                 cnpjs=form_data["cnpjs"],
                 data_inicial=data_inicial,
                 data_final=data_final,
+                profile_path=CHROME_PROFILE_PATH,
                 download_path=form_data["download_path"],
                 headless=False,
             )
