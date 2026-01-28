@@ -1,6 +1,20 @@
+import sys
+
+# Força encoding UTF-8 no console do Windows para suportar caracteres Unicode
+# Necessário para apps bundled (Flet build) onde o console não usa UTF-8 por padrão
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if sys.stderr and hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # Compatibilidade com Python 3.12+ (distutils foi removido do stdlib)
 # Precisa vir ANTES de qualquer import que use undetected_chromedriver
-import sys
 import types
 
 try:
