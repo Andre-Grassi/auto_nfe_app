@@ -20,7 +20,7 @@ DefaultGroupName={#MyAppName}
 ; Permite que o usuário escolha criar atalho na área de trabalho
 AllowNoIcons=yes
 ; Caminho de saída do instalador
-OutputDir=installer_output
+OutputDir=output
 OutputBaseFilename=AutoNFe_Setup_{#MyAppVersion}
 ; Ícone do instalador (opcional - descomente e ajuste o caminho se tiver um ícone)
 ; SetupIconFile=assets\icon.ico
@@ -39,7 +39,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; Copia todos os arquivos do build para o diretório de instalação
-Source: "build\windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Pré-requisitos (WebView2 e VC++ Redistributable)
 Source: "prerequisites\MicrosoftEdgeWebview2Setup.exe"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall
 Source: "prerequisites\vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall
