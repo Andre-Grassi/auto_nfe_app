@@ -6,9 +6,13 @@ schemas/*
 *.xls
 *.xlsx
 chrome_profile*/
+*.pdf
 
 # ====== Arquivos Automáticos Python ======
 .venv/*
 *.egg-info
-build/*
+build*/*
 *.pyc 
+
+# ====== Arquivos do Instalador ======
+installer/output
