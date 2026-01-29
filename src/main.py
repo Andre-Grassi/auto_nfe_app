@@ -31,26 +31,63 @@ except ImportError:
 import flet as ft
 import asyncio
 import os
+import logging
+from datetime import datetime
 
-from shutil import copyfile
+# Configura logging para arquivo (útil para debug em PCs sem console)
+LOG_DIR = os.path.join(os.environ.get("LOCALAPPDATA", "."), "AutoNfe", "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+LOG_FILE = os.path.join(LOG_DIR, f"app_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
 
-from config.paths import (
-    APPDATA_DIR,
-    PROFILE_PATH,
-    PROFILE_TEMPLATE_PATH,
-    EMPRESAS_NFSE_PATH,
-    EMPRESAS_NFSE_TEMPLATE_PATH,
-    EMPRESAS_NFE_PATH,
-    EMPRESAS_NFE_TEMPLATE_PATH,
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE, encoding="utf-8"),
+        logging.StreamHandler(),  # Também mostra no console se disponível
+    ],
 )
+logger = logging.getLogger(__name__)
+logger.info(f"=== App iniciando - Log: {LOG_FILE} ===")
 
-# --- Views ---
-from views.home import HomeView
-from views.nfe import NfeView
-from views.nfse import NfseView
+try:
+    logger.info("Importando shutil...")
+    from shutil import copyfile
 
-# --- Client Nfe ---
-from auto_nfe import ClientNfe
+    logger.info("Importando config.paths...")
+    from config.paths import (
+        APPDATA_DIR,
+        PROFILE_PATH,
+        PROFILE_TEMPLATE_PATH,
+        EMPRESAS_NFSE_PATH,
+        EMPRESAS_NFSE_TEMPLATE_PATH,
+        EMPRESAS_NFE_PATH,
+        EMPRESAS_NFE_TEMPLATE_PATH,
+        PROJECT_ROOT,
+        TEMPLATES_DIR,
+    )
+
+    logger.info(f"PROJECT_ROOT: {PROJECT_ROOT}")
+    logger.info(f"TEMPLATES_DIR: {TEMPLATES_DIR}")
+    logger.info(f"APPDATA_DIR: {APPDATA_DIR}")
+    logger.info(f"PROFILE_TEMPLATE_PATH: {PROFILE_TEMPLATE_PATH}")
+    logger.info(f"sys.executable: {sys.executable}")
+
+    logger.info("Importando views...")
+    from views.home import HomeView
+    from views.nfe import NfeView
+    from views.nfse import NfseView
+
+    logger.info("Views importadas com sucesso")
+
+    logger.info("Importando auto_nfe...")
+    from auto_nfe import ClientNfe
+
+    logger.info("auto_nfe importado com sucesso")
+
+except Exception as e:
+    logger.exception(f"ERRO FATAL durante imports: {e}")
+    raise
 
 
 async def main(page: ft.Page):
@@ -84,19 +121,19 @@ async def main(page: ft.Page):
     def route_change():
         page.views.clear()
 
-        print("Rota alterada para:", page.route)
+        logger.info(f"Rota alterada para: {page.route}")
 
         if page.route == "/":
             home_view = HomeView(page)
-            print("Entrou na HomeView")
+            logger.info("Entrou na HomeView")
             page.views.append(home_view)
         elif page.route == "/nfe":
             nfe_view = NfeView(page)
-            print("Entrou na NfeView")
+            logger.info("Entrou na NfeView")
             page.views.append(nfe_view)
         elif page.route == "/nfse":
             nfse_view = NfseView(page)
-            print("Entrou na NfseView")
+            logger.info("Entrou na NfseView")
             page.views.append(nfse_view)
 
         page.update()
@@ -112,9 +149,14 @@ async def main(page: ft.Page):
     page.on_view_pop = view_pop
 
     # --- Inicializa App ---
-    print("Inicializando aplicação...")
+    logger.info("Inicializando aplicação...")
 
     route_change()
 
 
-ft.run(main=main, assets_dir="../assets")
+try:
+    logger.info("Iniciando ft.run()...")
+    ft.run(main=main, assets_dir="assets")
+except Exception as e:
+    logger.exception(f"ERRO FATAL em ft.run(): {e}")
+    raise
