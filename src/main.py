@@ -51,27 +51,18 @@ logger = logging.getLogger(__name__)
 logger.info(f"=== App iniciando - Log: {LOG_FILE} ===")
 
 try:
-    logger.info("Importando shutil...")
-    from shutil import copyfile
-
     logger.info("Importando config.paths...")
     from config.paths import (
         APPDATA_DIR,
         PROFILE_PATH,
-        PROFILE_TEMPLATE_PATH,
         EMPRESAS_NFSE_PATH,
-        EMPRESAS_NFSE_TEMPLATE_PATH,
         EMPRESAS_NFE_PATH,
-        EMPRESAS_NFE_TEMPLATE_PATH,
-        PROJECT_ROOT,
-        TEMPLATES_DIR,
     )
 
-    logger.info(f"PROJECT_ROOT: {PROJECT_ROOT}")
-    logger.info(f"TEMPLATES_DIR: {TEMPLATES_DIR}")
+    logger.info("Importando config.template_utils...")
+    from config.template_utils import ensure_config_file
+
     logger.info(f"APPDATA_DIR: {APPDATA_DIR}")
-    logger.info(f"PROFILE_TEMPLATE_PATH: {PROFILE_TEMPLATE_PATH}")
-    logger.info(f"sys.executable: {sys.executable}")
 
     logger.info("Importando views...")
     from views.home import HomeView
@@ -92,14 +83,16 @@ except Exception as e:
 
 async def main(page: ft.Page):
     # --- Configurações ---
-    # Garante que dados no AppData existam
+    # Garante que arquivos de configuração existam no AppData
     os.makedirs(APPDATA_DIR, exist_ok=True)
-    if not os.path.exists(PROFILE_PATH):
-        copyfile(PROFILE_TEMPLATE_PATH, PROFILE_PATH)
-    if not os.path.exists(EMPRESAS_NFSE_PATH):
-        copyfile(EMPRESAS_NFSE_TEMPLATE_PATH, EMPRESAS_NFSE_PATH)
-    if not os.path.exists(EMPRESAS_NFE_PATH):
-        copyfile(EMPRESAS_NFE_TEMPLATE_PATH, EMPRESAS_NFE_PATH)
+
+    # Cria configs a partir dos templates se não existirem
+    if ensure_config_file(PROFILE_PATH, "profile_template.toml"):
+        logger.info(f"Criado: {PROFILE_PATH}")
+    if ensure_config_file(EMPRESAS_NFSE_PATH, "empresas_nfse_template.toml"):
+        logger.info(f"Criado: {EMPRESAS_NFSE_PATH}")
+    if ensure_config_file(EMPRESAS_NFE_PATH, "empresas_nfe_template.toml"):
+        logger.info(f"Criado: {EMPRESAS_NFE_PATH}")
 
     # --- Janela ---
     page.title = "Auto Nfe"

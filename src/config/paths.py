@@ -60,15 +60,10 @@ def get_file_path(relative_path: str) -> str:
 
 # ====== Specific Paths (shortcuts) ======
 
-# App Profiles
+# App Profiles (armazenados no AppData do usuário)
 PROFILE_PATH = get_appdata_file_path("profile.toml")
-PROFILE_TEMPLATE_PATH = get_assets_file_path(
-    "profile_template.toml"
-)  # No need for complex path resolution, since it's inside assets/
 EMPRESAS_NFSE_PATH = get_appdata_file_path("empresas_nfse.toml")
-EMPRESAS_NFSE_TEMPLATE_PATH = get_assets_file_path("empresas_nfse_template.toml")
 EMPRESAS_NFE_PATH = get_appdata_file_path("empresas_nfe.toml")
-EMPRESAS_NFE_TEMPLATE_PATH = get_assets_file_path("empresas_nfe_template.toml")
 
 # Chrome Profile (for nfse web)
 CHROME_PROFILE_PATH = get_appdata_file_path("chrome_profile_nfse")
