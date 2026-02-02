@@ -60,9 +60,24 @@ try {
     Write-Host "Build do Flet concluído!" -ForegroundColor Green
 
     # ============================================
-    # ETAPA 5: Compilar instalador
+    # ETAPA 5: Copiar templates para build
     # ============================================
-    Write-Host "`n[5/5] Compilando instalador..." -ForegroundColor Cyan
+    # Flet comprime assets em app.zip, mas precisamos dos templates como arquivos reais
+    # para poder usar com copyfile() do Python
+    Write-Host "`n[5/6] Copiando templates..." -ForegroundColor Cyan
+    
+    $templatesSource = ".\src\assets\*_template.toml"
+    $templatesDest = ".\build\windows\templates"
+    
+    New-Item -ItemType Directory -Path $templatesDest -Force | Out-Null
+    Copy-Item -Path $templatesSource -Destination $templatesDest -Force
+    
+    Write-Host "Templates copiados para: $templatesDest" -ForegroundColor Green
+
+    # ============================================
+    # ETAPA 6: Compilar instalador
+    # ============================================
+    Write-Host "`n[6/6] Compilando instalador..." -ForegroundColor Cyan
 
     # Lê a versão do pyproject.toml
     $pyprojectPath = ".\pyproject.toml"
