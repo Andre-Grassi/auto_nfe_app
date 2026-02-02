@@ -1,9 +1,0 @@
-[[empresas]]
-nome = "Empresa A"
-cnpj_cpf = "00000000000000"
-selecionada = true
-
-[[empresas]]
-nome = "Empresa B"
-cnpj_cpf = "00000000000001"
-selecionada = false

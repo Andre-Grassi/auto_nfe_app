@@ -1,8 +1,0 @@
-[[empresas]]
-nome = "Empresa Exemplo"
-cnpj_cpf = "00000000000000"
-caminho_certificado = "C:\\caminho\\para\\certificado.pfx"
-senha = ""
-caminho_relacao = "C:\\caminho\\para\\planilha.xls"
-pasta_xml = "C:\\caminho\\para\\pasta_xml"
-selecionada = true
