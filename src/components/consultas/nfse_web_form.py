@@ -159,6 +159,7 @@ class NfseWebForm(ft.Column):
             label="Pasta de Download",
             icon=ft.Icons.FOLDER_OPEN,
             file_type=FileType.FOLDER,
+            text_input=False,
         )
         self.download_folder_input.width = 300
 
