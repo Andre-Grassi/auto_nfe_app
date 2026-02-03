@@ -1,6 +1,6 @@
 [project]
 name = "auto-nfe-app"
-version = "0.18.7"
+version = "0.19.0"
 requires-python = ">=3.12,<3.15"
 
 dependencies = [

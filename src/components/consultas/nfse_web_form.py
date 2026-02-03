@@ -46,7 +46,11 @@ class NfseWebForm(ft.Column):
                     fields=[
                         FieldConfig(key="usuario", label="Usuário"),
                         FieldConfig(key="senha", label="Senha", password=True),
-                        FieldConfig(key="pasta_relatorio", label="Pasta Relatório", folder_picker=True),
+                        FieldConfig(
+                            key="pasta_relatorio",
+                            label="Pasta Relatório",
+                            folder_picker=True,
+                        ),
                     ],
                 ),
             ],
@@ -226,3 +230,96 @@ class NfseWebForm(ft.Column):
             print(f"Arquivo profile.toml não encontrado em: {PROFILE_PATH}")
         except Exception as ex:
             print(f"Erro ao carregar perfil: {ex}")
+
+    def _set_field_error(self, field: ft.TextField, has_error: bool):
+        """Define borda vermelha em campos inválidos."""
+        if has_error:
+            field.border_color = ft.Colors.RED
+        else:
+            field.border_color = None
+        field.update()
+
+    def validate_inputs(self) -> tuple[bool, str | None]:
+        """
+        Valida todos os campos do formulário.
+        Retorna (True, None) se todos estão válidos.
+        Retorna (False, mensagem_erro) caso contrário.
+        Campos inválidos ficam com borda vermelha.
+        """
+        errors = []
+
+        # Validação Usuário (não vazio)
+        usuario_valid = bool(
+            self.usuario_input.value and self.usuario_input.value.strip()
+        )
+        self._set_field_error(self.usuario_input, not usuario_valid)
+        if not usuario_valid:
+            errors.append("Usuário é obrigatório")
+
+        # Validação Senha (não vazia)
+        senha_valid = bool(self.senha_input.value and self.senha_input.value.strip())
+        self._set_field_error(self.senha_input, not senha_valid)
+        if not senha_valid:
+            errors.append("Senha é obrigatória")
+
+        # Validação Data Inicial (não vazia)
+        data_inicial_valid = bool(
+            self.data_inicial_input.value and self.data_inicial_input.value.strip()
+        )
+        self._set_field_error(self.data_inicial_input, not data_inicial_valid)
+        if not data_inicial_valid:
+            errors.append("Data inicial é obrigatória")
+
+        # Validação Data Final (não vazia)
+        data_final_valid = bool(
+            self.data_final_input.value and self.data_final_input.value.strip()
+        )
+        self._set_field_error(self.data_final_input, not data_final_valid)
+        if not data_final_valid:
+            errors.append("Data final é obrigatória")
+
+        # Validação Data Final maior ou igual a Data Inicial + formato
+        if data_inicial_valid and data_final_valid:
+            dt_inicial = None
+            dt_final = None
+
+            # Valida formato da data inicial
+            try:
+                dt_inicial = datetime.datetime.strptime(
+                    self.data_inicial_input.value.strip(), "%d/%m/%Y"
+                )
+            except ValueError:
+                self._set_field_error(self.data_inicial_input, True)
+                errors.append("Data inicial com formato inválido (use dd/mm/aaaa)")
+
+            # Valida formato da data final
+            try:
+                dt_final = datetime.datetime.strptime(
+                    self.data_final_input.value.strip(), "%d/%m/%Y"
+                )
+            except ValueError:
+                self._set_field_error(self.data_final_input, True)
+                errors.append("Data final com formato inválido (use dd/mm/aaaa)")
+
+            # Compara datas se ambas são válidas
+            if dt_inicial and dt_final and dt_final < dt_inicial:
+                self._set_field_error(self.data_final_input, True)
+                errors.append("Data final deve ser maior ou igual à data inicial")
+
+        # Validação Pasta Download (não vazia)
+        folder_valid = bool(
+            self.download_folder_input.value
+            and self.download_folder_input.value.strip()
+        )
+        self._set_field_error(self.download_folder_input.text_field, not folder_valid)
+        if not folder_valid:
+            errors.append("Pasta de download é obrigatória")
+
+        # Validação Empresas (ao menos uma selecionada)
+        empresas_valid = len(self.empresas_editor.get_selected_cnpj_cpf()) > 0
+        if not empresas_valid:
+            errors.append("Selecione ao menos uma empresa")
+
+        if errors:
+            return (False, "; ".join(errors))
+        return (True, None)

@@ -7,6 +7,7 @@ from auto_nfe import ClientNfseWeb, CancelledException
 
 from components.consultas.nfse_web_form import NfseWebForm
 from components.download_btn import DownloadBtn
+from components.toast import ToastManager
 from config.paths import CHROME_PROFILE_PATH
 
 
@@ -78,6 +79,9 @@ class NfseView(ft.View):
         self._client: ClientNfseWeb | None = None
         self._cancel_event: threading.Event | None = None
 
+        # Toast notifications
+        self.toast = ToastManager(page)
+
     async def update_progress_ui(self, current_step, total_steps):
         """
         Callback chamado pelo Backend para atualizar a UI.
@@ -107,18 +111,6 @@ class NfseView(ft.View):
 
             async def run():
                 await self.update_progress_ui(current, total)
-
-            self.page.run_task(run)
-
-        def task_notification(message: str):
-
-            async def run():
-                self.dlg_nfse_status.content = ft.Text(message)
-                self.page.show_dialog(self.dlg_nfse_status)
-                self.page.update()
-                await asyncio.sleep(2)
-                self.page.pop_dialog()
-                self.page.update()
 
             self.page.run_task(run)
 
@@ -180,13 +172,10 @@ class NfseView(ft.View):
         # 1. Obtém dados do formulário
         form_data = self.nfse_web_form.get_values()
 
-        # Validação simples
-        if not form_data:
-            self.page.snack_bar = ft.SnackBar(
-                ft.Text("Por favor, preencha todos os campos!")
-            )
-            self.page.snack_bar.open = True
-            self.page.update()
+        # Validação
+        is_valid, error_msg = self.nfse_web_form.validate_inputs()
+        if not is_valid:
+            self.toast.error(error_msg)
             return
 
         self.form_data = form_data
