@@ -196,6 +196,7 @@ class NfseView(ft.View):
         self.cancel_btn.visible = True  # Mostra botão cancelar
         self.progress_text.visible = True
         self.progress_bar.visible = True
+        self.progress_bar.value = 0
         self.progress_text.value = "Iniciando conexão..."
         self.progress_text.color = ft.Colors.WHITE
         self.update()
