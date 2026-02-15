@@ -162,6 +162,10 @@ class NfseWebForm(ft.Column):
         )
         self.download_folder_input.width = 300
 
+        # --- Checkboxes de tipo de consulta ---
+        self.check_relatorio = ft.Checkbox(label="Relatórios (PDF)", value=True)
+        self.check_nota = ft.Checkbox(label="Notas Fiscais (XML)", value=False)
+
         # --- Layout (Grid) ---
         row1 = ft.Row(
             [self.load_profile_btn, btn_edit_profile],
@@ -187,7 +191,14 @@ class NfseWebForm(ft.Column):
             spacing=20,
         )
 
-        self.controls.extend([row1, row2, row3])
+        # Linha 4: Tipo de consulta
+        row4 = ft.Row(
+            [self.check_relatorio, self.check_nota],
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=20,
+        )
+
+        self.controls.extend([row1, row2, row3, row4])
 
     def get_values(self):
         """
@@ -201,6 +212,8 @@ class NfseWebForm(ft.Column):
             "data_inicial": self.data_inicial_input.value,
             "data_final": self.data_final_input.value,
             "download_path": self.download_folder_input.value,
+            "check_relatorio": self.check_relatorio.value,
+            "check_nota": self.check_nota.value,
         }
 
     def _load_profile(self, e):
@@ -319,6 +332,10 @@ class NfseWebForm(ft.Column):
         empresas_valid = len(self.empresas_editor.get_selected_cnpj_cpf()) > 0
         if not empresas_valid:
             errors.append("Selecione ao menos uma empresa")
+
+        # Validação: ao menos um tipo de consulta selecionado
+        if not self.check_relatorio.value and not self.check_nota.value:
+            errors.append("Selecione ao menos um tipo de consulta")
 
         if errors:
             return (False, "; ".join(errors))

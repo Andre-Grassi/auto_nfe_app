@@ -120,23 +120,47 @@ class NfseView(ft.View):
             ).date()
             data_final = datetime.strptime(form_data["data_final"], "%d/%m/%Y").date()
 
-            self._client = ClientNfseWeb(
-                usuario=form_data["usuario"],
-                senha=form_data["senha"],
-                cnpjs=form_data["cnpjs"],
-                data_inicial=data_inicial,
-                data_final=data_final,
-                profile_path=CHROME_PROFILE_PATH,
-                download_path=form_data["download_path"],
-                headless=False,
-            )
+            # Executa as consultas selecionadas
+            if form_data["check_relatorio"]:
+                self._client = ClientNfseWeb(
+                    usuario=form_data["usuario"],
+                    senha=form_data["senha"],
+                    cnpjs=form_data["cnpjs"],
+                    data_inicial=data_inicial,
+                    data_final=data_final,
+                    profile_path=CHROME_PROFILE_PATH,
+                    download_path=form_data["download_path"],
+                    headless=False,
+                )
+                self.progress_text.value = "Baixando Relatórios..."
+                self.progress_text.update()
 
-            # Executa função bloqueante em thread separada
-            await asyncio.to_thread(
-                self._client.consulta_relatorios,
-                callback_progress=task_progress,
-                cancel_event=self._cancel_event,
-            )
+                await asyncio.to_thread(
+                    self._client.consulta_relatorios,
+                    callback_progress=task_progress,
+                    cancel_event=self._cancel_event,
+                )
+
+            if form_data["check_nota"]:
+                self._client = ClientNfseWeb(
+                    usuario=form_data["usuario"],
+                    senha=form_data["senha"],
+                    cnpjs=form_data["cnpjs"],
+                    data_inicial=data_inicial,
+                    data_final=data_final,
+                    profile_path=CHROME_PROFILE_PATH,
+                    download_path=form_data["download_path"],
+                    headless=False,
+                )
+
+                self.progress_text.value = "Exportando Notas XML..."
+                self.progress_text.update()
+
+                await asyncio.to_thread(
+                    self._client.exportar_notas_xml,
+                    callback_progress=task_progress,
+                    cancel_event=self._cancel_event,
+                )
 
             # Sucesso
             self.progress_text.value = "Download completado com sucesso!"
